@@ -8,6 +8,12 @@ using C7Engine;
 
 namespace C7.Map {
 
+	public enum HorizontalWrapState {
+		Left,  // beyond left edge of the map is visible
+		Right, // beyond right edge of the map is visible
+		None,  // camera is entirely over the map
+	}
+
 	public partial class MapView : Node2D {
 		private string[,]terrain;
 		private TileMap terrainTilemap;
@@ -139,19 +145,20 @@ namespace C7.Map {
 			}
 		}
 
-		public enum WrapSide
-		{
-			Left,
-			Right,
-		}
-
-		public void setWrapSide(WrapSide side) {
-			if (side == WrapSide.Left) {
-				wrappingTerrainTilemap.Position = terrainTilemap.Position + (Vector2I.Left * pixelWidth);
-				wrappingTilemap.Position = tilemap.Position + (Vector2I.Left * pixelWidth);
+		public void setHorizontalWrap(HorizontalWrapState state) {
+			if (state == HorizontalWrapState.None) {
+				wrappingTerrainTilemap.Hide();
+				wrappingTilemap.Hide();
 			} else {
-				wrappingTerrainTilemap.Position = terrainTilemap.Position + (Vector2I.Right * pixelWidth);
-				wrappingTilemap.Position = tilemap.Position + (Vector2I.Right * pixelWidth);
+				Vector2I offset = state switch {
+					HorizontalWrapState.Left => Vector2I.Left,
+					HorizontalWrapState.Right => Vector2I.Right,
+					_ => Vector2I.Right, // invalid but put them somewhere
+				} * pixelWidth;
+				wrappingTerrainTilemap.Show();
+				wrappingTilemap.Show();
+				wrappingTerrainTilemap.Position = terrainTilemap.Position + offset;
+				wrappingTilemap.Position = tilemap.Position + offset;
 			}
 		}
 
@@ -180,8 +187,7 @@ namespace C7.Map {
 				}
 			}
 
-			// put the wrapping tilemaps somewhere
-			setWrapSide(WrapSide.Right);
+			setHorizontalWrap(HorizontalWrapState.None);
 
 			tilemap.ZIndex = 10; // need to figure out a good way to order z indices
 			wrappingTilemap.ZIndex = 10;

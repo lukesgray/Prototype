@@ -22,7 +22,7 @@ namespace C7.Map {
 		private TileMap tilemap;
 		private TileMap wrappingTilemap;
 		private TileSet tileset;
-		private Vector2I tileSize = new Vector2I(128, 64);
+		public Vector2I tileSize {get; private set;} = new Vector2I(128, 64);
 		private ILogger log = LogManager.ForContext<MapView>();
 		public bool wrapHorizontally {get; private set;}
 		public int worldEdgeRight {get; private set;}
@@ -170,13 +170,8 @@ namespace C7.Map {
 		}
 
 		public void setHorizontalWrap(HorizontalWrapState state) {
-			if (state == HorizontalWrapState.None) {
-				wrappingTerrainTilemap.Hide();
-				wrappingTilemap.Hide();
-			} else {
+			if (state != HorizontalWrapState.None) {
 				Vector2I offset = horizontalWrapOffset(state);
-				wrappingTerrainTilemap.Show();
-				wrappingTilemap.Show();
 				wrappingTerrainTilemap.Position = terrainTilemap.Position + offset;
 				wrappingTilemap.Position = tilemap.Position + offset;
 			}
@@ -207,7 +202,7 @@ namespace C7.Map {
 				}
 			}
 
-			setHorizontalWrap(HorizontalWrapState.None);
+			setHorizontalWrap(HorizontalWrapState.Right); // just put it somewhere
 
 			tilemap.ZIndex = 10; // need to figure out a good way to order z indices
 			wrappingTilemap.ZIndex = 10;

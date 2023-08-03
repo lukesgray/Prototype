@@ -46,7 +46,7 @@ namespace C7.Map {
 		private GameMap gameMap;
 
 		private Dictionary<MapUnit, UnitSprite> unitSprites = new Dictionary<MapUnit, UnitSprite>();
-		private Dictionary<City, CityScene> cityScenes = new Dictionary<City, CityScene>();
+		private Dictionary<Tile, CityScene> cityScenes = new Dictionary<Tile, CityScene>();
 		private CursorSprite cursor;
 
 		private UnitSprite spriteFor(MapUnit unit) {
@@ -70,7 +70,7 @@ namespace C7.Map {
 			CityScene scene = new CityScene(city, tile);
 			scene.Position = tilemap.MapToLocal(stackedCoords(tile));
 			AddChild(scene);
-			cityScenes.Add(city, scene);
+			cityScenes.Add(tile, scene);
 		}
 
 		private void animateUnit(Tile tile, MapUnit unit, HorizontalWrapState wrap) {
@@ -157,7 +157,17 @@ namespace C7.Map {
 				if (unit != MapUnit.NONE) {
 					animateUnit(tile, unit, wrap);
 				}
-				// TODO: shift city scenes here?
+				if (cityScenes.ContainsKey(tile)) {
+					CityScene scene = cityScenes[tile];
+					Vector2 position = tilemap.MapToLocal(stackedCoords(tile));
+					Vector2 wrapOffset = wrap switch {
+						HorizontalWrapState.Left => Vector2.Left,
+						HorizontalWrapState.Right => Vector2.Right,
+						_ => Vector2.Zero,
+					} * pixelWidth;
+					position += wrapOffset;
+					scene.Position = position;
+				}
 			}
 		}
 

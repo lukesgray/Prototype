@@ -73,6 +73,14 @@ namespace C7.Map {
 			cityScenes.Add(tile, scene);
 		}
 
+		private Vector2I horizontalWrapOffset(HorizontalWrapState wrap) {
+			return wrap switch {
+				HorizontalWrapState.Left => Vector2I.Left,
+				HorizontalWrapState.Right => Vector2I.Right,
+				_ => Vector2I.Zero,
+			} * pixelWidth;
+		}
+
 		private void animateUnit(Tile tile, MapUnit unit, HorizontalWrapState wrap) {
 			// TODO: simplify AnimationManager and drawing animations it is unnecessarily complex
 			// - also investigate if the custom offset tracking and SetFrame can be replaced by
@@ -92,11 +100,7 @@ namespace C7.Map {
 			sprite.SetFrame(frame);
 			sprite.Show();
 
-			Vector2 wrapOffset = wrap switch {
-				HorizontalWrapState.Left => Vector2.Left,
-				HorizontalWrapState.Right => Vector2.Right,
-				_ => Vector2.Zero,
-			} * pixelWidth;
+			Vector2 wrapOffset = horizontalWrapOffset(wrap);
 			sprite.Translate(wrapOffset);
 
 			if (unit == game.CurrentlySelectedUnit) {
@@ -159,13 +163,7 @@ namespace C7.Map {
 				}
 				if (cityScenes.ContainsKey(tile)) {
 					CityScene scene = cityScenes[tile];
-					Vector2 position = tilemap.MapToLocal(stackedCoords(tile));
-					Vector2 wrapOffset = wrap switch {
-						HorizontalWrapState.Left => Vector2.Left,
-						HorizontalWrapState.Right => Vector2.Right,
-						_ => Vector2.Zero,
-					} * pixelWidth;
-					position += wrapOffset;
+					Vector2 position = tilemap.MapToLocal(stackedCoords(tile)) + horizontalWrapOffset(wrap);
 					scene.Position = position;
 				}
 			}
@@ -176,11 +174,7 @@ namespace C7.Map {
 				wrappingTerrainTilemap.Hide();
 				wrappingTilemap.Hide();
 			} else {
-				Vector2I offset = state switch {
-					HorizontalWrapState.Left => Vector2I.Left,
-					HorizontalWrapState.Right => Vector2I.Right,
-					_ => Vector2I.Right, // invalid but put them somewhere
-				} * pixelWidth;
+				Vector2I offset = horizontalWrapOffset(state);
 				wrappingTerrainTilemap.Show();
 				wrappingTilemap.Show();
 				wrappingTerrainTilemap.Position = terrainTilemap.Position + offset;
